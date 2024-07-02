@@ -1,0 +1,45 @@
+Introduction
+The GPS Tracker App is a desktop application designed to display the current location of the user on a map based on their IP address. The application uses geolocation services to determine the user's location and generates an interactive map that can be viewed in a web browser.
+
+System Requirements
+Operating System: Windows, macOS, or Linux
+Python 3.6 or higher
+Internet connection
+Installation
+Ensure you have Python 3.6 or higher installed on your system. You can download it from python.org.
+
+Install the required Python packages using pip:
+
+sh
+Copy code
+pip install tkinter geocoder gmplot webbrowser
+Download the GPS Tracker App source code and save it to your preferred location.
+
+Launching the Application
+Open a terminal or command prompt.
+
+Navigate to the directory where the GPS Tracker App source code is saved.
+
+Run the application by executing:
+
+sh
+Copy code
+python gps_tracker_app.py
+Replace gps_tracker_app.py with the actual filename if it differs.
+
+Using the Application
+Opening the Map
+Once the application is running, a window titled "GPS Tracker App" will appear.
+
+Click the "Open Map in Browser" button. This will open your default web browser and display a map centered on your current location.
+
+
+Troubleshooting
+Location Not Found
+If the application cannot determine your location based on your IP address, ensure you have an active internet connection.
+If the problem persists, try restarting the application.
+Map Not Opening
+Ensure you have a default web browser set up on your system.
+Verify that the file map.html is being generated in the same directory as the application script.
+Missing Dependencies
+If you encounter an error about missing packages, ensure all required packages are installed using pip install tkinter geocoder gmplot webbrowser.
