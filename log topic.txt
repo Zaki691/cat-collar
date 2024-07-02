@@ -1,0 +1,7 @@
+def log_data(data1, data2, filename='log.txt'):
+    with open(filename, 'a') as f:
+        f.write(f"Data1: {data1}, Data2: {data2}\n")
+
+#example useage:
+data 1 = "location"
+data 2 = "battery life"
