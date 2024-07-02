@@ -1,19 +1,12 @@
-#Shreyan Sequeira, 02.03.2024
-#MQTT data logger for dog collar project
-#The functions regarding connecting to owntracks were created using the assistance of Dr. Stamou's videos and presentation on Aula
-#However, I feel as though I have made enough changes to the source code that I feel I can gain credit for it
 import paho.mqtt.client as mqtt
 from datetime import datetime
 import time
-#18/03/2024: imported the re library which is needed so as to be able to use regular expressions regarding the battery topic
 import re
 
-#this will hold incoming messages
+# List to store messages
 messages = []
-'''Callback function that connects the broker
- Upon connection, subscribes to the topic. In this case, as owntracks publishes location data, 
- this what will be obtained from the messages.'''
-#08/03/2024: added a connection to the collar/logs topic
+
+# Callback function for connection
 def connection(client, userdata, flags, rc):
     if rc == 0:
         client.connected_flag = True
@@ -23,14 +16,15 @@ def connection(client, userdata, flags, rc):
     else:
         print("Connection Unsuccessful, Error message:", rc)
 
-#18/03/2024: defined extract_battery_info, a function that extracts the section of the data recieved from 
-#owntracks that pertains to the battery life of the phone
+# Callback function for disconnect
+def on_disconnect(client, userdata, rc):
+    if rc != 0:
+        print("Unexpected disconnection.")
+
+# Function to extract battery information
 def extract_battery_info(message):
-#these variables define the word to be extracted by the regex and the amount of characters to be extracted after
     word_to_extract = "batt"
     characters_after_word = 4
-    
-#the regex pattern is constructed and a match is attempted
     pattern = re.compile(r'\b{}\b(.{{0,{}}})'.format(re.escape(word_to_extract), characters_after_word))
     match = pattern.search(message)
     if match:
@@ -39,36 +33,46 @@ def extract_battery_info(message):
     else:
         return None
 
-#08/03/2024: data from the collar/logs topic is now saved to an array
+# Callback function for receiving messages
 def on_message(client, userdata, msg):
     topic = msg.topic
     try:
         payload = msg.payload.decode("utf8")
-        messages.append(msg.payload.decode("utf8"))
-#18/03/2024: added a print statement for testing if the data has been properly recieved and appended to the list
-#this will likely be removed in the final code
-        print(messages)
+        messages.append(payload)
+        
+        # Log message with timestamp
+        log_message(topic, payload)
+        
+        # Extract battery info if available
+        battery_info = extract_battery_info(payload)
+        if battery_info:
+            log_battery_info(battery_info)
+
     except Exception as e:
-        print(f"Cannot decode data on topic {topic}: {e}")
-    userdata['logs'].append(msg.payload.decode())
-    battery_info = extract_battery_info(payload)
-    if battery_info:
-            print("Battery Info:", battery_info)
+        print(f"Error decoding message: {e}")
 
-def on_disconnect(client, userdata, rc):
-    print("Disconnected with result code "+str(rc))
+# Function to log messages with timestamps
+def log_message(topic, message):
+    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    with open("cat_collar_logs.txt", "a") as log_file:
+        log_file.write(f"{timestamp} - Topic: {topic} - Message: {message}\n")
 
+# Function to log battery information
+def log_battery_info(battery_info):
+    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    with open("cat_collar_battery_logs.txt", "a") as battery_log_file:
+        battery_log_file.write(f"{timestamp} - Battery Info: {battery_info}\n")
 
+# Setup MQTT client
 client = mqtt.Client(userdata={'logs': []})
 client.on_connect = connection
 client.on_message = on_message
 client.on_disconnect = on_disconnect
 
-"""18/03/2024: removed the client.username_pw_set because it had no actual 
-functionality in the program"""
-#client.username_pw_set("SS", "mqttBROKER")
+# Connect to the MQTT broker
 client.connect("broker.hivemq.com", 1883)
 
-#this ensures the code loops forever which is vital for recieving continuous realtime information
+# Start the MQTT client loop
 client.loop_forever()
+
 
